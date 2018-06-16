@@ -1,0 +1,407 @@
+---
+layout: post
+title: jdk源码阅读--LinkedList
+categories: [技术] 
+description: jdk源码阅读--LinkedList
+keywords: java
+---
+
+
+ L i n k e d L i s t 也 是 一 个 变 长 有 序 集 合 ， 跟 [ A r r a y L i s t ] ( h t t p : / / w w w . c t g u g g b o n d . c o m / j a v a % e 6 % b a % 9 0 % e 7 % a 0 % 8 1 % e 9 % 9 8 % 8 5 % e 8 % a f % b b - a r r a y l i s t / ) 一 样 都 实 现 了 L i s t 接 口 ， 但 不 同 的 是 L i n k e d L i s t 以 链 表 方 式 实 现 ， 导 致 其 特 性 与 A r r a y L i s t 也 有 所 不 同 。   L i n k e d L i s t 按 位 置 查 找 需 要 遍 历 链 表 ， 不 如 A r r a y L i s t 直 接 定 位 快 ， 在 首 尾 增 删 元 素 比 较 方 便 ， 如 要 在 指 定 位 置 增 加 删 除 修 改 元 素 ， 也 会 有 遍 历 链 表 o ( n ) 的 代 价 。   另 外 这 个 类 实 现 了 D e q u e 接 口 提 供 了 p u s h ， p o p ， a d d ， o f f e r ， p o l l 等 方 法 ， 供 我 们 将 列 表 用 作 实 现 堆 栈 、 队 列 或 双 端 队 列 。   继 承 关 系 ：   ! [ L i n k e d L i s t 继 承 关 系 ] ( h t t p s : / / w w w . g g b o n d . c c / w p - c o n t e n t / u p l o a d s / 2 0 1 7 / 0 6 / L i n k e d L i s t . p n g )     * * 成 员 变 量 声 明 : * * 
+ 
+ ` ` ` j a v a 
+                 / / 列 表 的 大 小 
+                 t r a n s i e n t   i n t   s i z e   =   0 ; 
+                 / / 指 向 第 一 个 结 点 
+                 t r a n s i e n t   N o d e < E >   f i r s t ; 
+                 / / 指 向 最 后 一 个 结 点 
+                 t r a n s i e n t   N o d e < E >   l a s t ; 
+ ` ` ` 
+ 
+     这 两 个 都 为 N o d e 的 泛 型 引 用 ， N o d e 定 义 为 内 部 类 ， 其 中 有 三 个 变 量 ， 一 个 指 向 前 一 个 结 点 ， 一 个 指 向 后 一 个 结 点 ， 一 个 保 存 结 点 值 并 提 供 一 个 构 造 方 法 ， 定 义 如 下 ： 
+ 
+ ` ` ` j a v a 
+           p r i v a t e   s t a t i c   c l a s s   N o d e < E >   { 
+                         E   i t e m ; 
+                         N o d e < E >   n e x t ; 
+                         N o d e < E >   p r e v ; 
+                         N o d e ( N o d e < E >   p r e v ,   E   e l e m e n t ,   N o d e < E >   n e x t )   { 
+                                 t h i s . i t e m   =   e l e m e n t ; 
+                                 t h i s . n e x t   =   n e x t ; 
+                                 t h i s . p r e v   =   p r e v ; 
+                         } 
+                 } 
+ ` ` ` 
+ 
+ * * 构 造 方 法 ： * *   * * L i n k e d L i s t ( ) * *   方 法 内 部 为 空 ， 构 造 一 个 空 的 列 表 。   * * L i n k e d L i s t ( C o l l e c t i o n < ?   e x t e n d s   E >   c ) * *   构 造 一 个 包 含 指 定   c o l l e c t i o n   中 的 元 素 的 列 表 ， 这 些 元 素 按 其   c o l l e c t i o n   的 迭 代 器 返 回 的 顺 序 排 列 。 内 部 实 现 为 调 用 下 面 将 要 写 的 a d d A l l 方 法 （ 跳 转 ）   * * 方 法 实 现 ： * *   这 里 先 看 看 查 找 指 定 位 置 结 点 的 方 法 n o d e , 此 方 法 调 用 较 多 ， 链 表 查 找 始 终 为 O （ n ） 的 复 杂 度 ， 这 里 为 了 稍 微 快 一 点 ， 比 较 了 一 下 i n d e x 与 s i z e / 2 的 大 小 , 以 决 定 从 前 面 还 是 从 后 面 开 始 查 找 。 返 回 找 到 的 结 点 的 引 用 。 
+ 
+ ` ` ` j a v a 
+                   N o d e < E >   n o d e ( i n t   i n d e x )   { 
+                         / /   a s s e r t   i s E l e m e n t I n d e x ( i n d e x ) ; 
+                         i f   ( i n d e x   <   ( s i z e   > >   1 ) )   { 
+                                 N o d e < E >   x   =   f i r s t ; 
+                                 f o r   ( i n t   i   =   0 ;   i   <   i n d e x ;   i + + ) 
+                                         x   =   x . n e x t ; 
+                                 r e t u r n   x ; 
+                         }   e l s e   { 
+                                 N o d e < E >   x   =   l a s t ; 
+                                 f o r   ( i n t   i   =   s i z e   -   1 ;   i   >   i n d e x ;   i - - ) 
+                                         x   =   x . p r e v ; 
+                                 r e t u r n   x ; 
+                         } 
+                 } 
+         
+ ` ` ` 
+ 
+     * * b o o l e a n   a d d ( E   e ) * *   将 指 定 元 素 e 添 加 到 此 列 表 的 结 尾   * * v o i d   a d d L a s t ( E   e ) * *   将 指 定 元 素 添 加 到 此 列 表 的 结 尾   这 两 个 将 元 素 添 加 到 列 表 结 尾 ， 内 部 都 调 用 了 下 面 的 l i n k L a s t 方 法 : 
+ 
+ ` ` ` j a v a 
+             v o i d   l i n k L a s t ( E   e )   { 
+                         f i n a l   N o d e < E >   l   =   l a s t ; 
+                         f i n a l   N o d e < E >   n e w N o d e   =   n e w   N o d e < > ( l ,   e ,   n u l l ) ; 
+                         l a s t   =   n e w N o d e ; 
+                         i f   ( l   = =   n u l l )       / / l 为 空 说 明 没 有 元 素 ， 新 插 入 结 点 为 第 一 个 结 点 
+                                 f i r s t   =   n e w N o d e ; 
+                         e l s e 
+                                 l . n e x t   =   n e w N o d e ; 
+                         s i z e + + ; 
+                         m o d C o u n t + + ; 
+                 } 
+ ` ` ` 
+ 
+ 
+     * * v o i d   a d d ( i n t   i n d e x ,   E   e l e m e n t ) * *   在 指 定 的 位 置 插 入 指 定 的 元 素 ， 如 果 插 入 位 置 i n d e x 为 最 后 ， 调 用 上 面 的 L i n k L a s t 方 法 插 入 到 最 后 ， 否 则 调 用 下 面 的 l i n k B e f o r e 插 入 结 点 到 到 i n d e x 位 置 的 结 点 之 后 ，   调 用 代 码 ： * * l i n k B e f o r e ( e l e m e n t ,   n o d e ( i n d e x ) ) * * 
+ 
+ ` ` ` j a v a 
+                 v o i d   l i n k B e f o r e ( E   e ,   N o d e < E >   s u c c )   { 
+                         / / s u c c   为 要 添 加 位 置 的 原 结 点 
+                         f i n a l   N o d e < E >   p r e d   =   s u c c . p r e v ; 
+                         f i n a l   N o d e < E >   n e w N o d e   =   n e w   N o d e < > ( p r e d ,   e ,   s u c c ) ; 
+                         s u c c . p r e v   =   n e w N o d e ; 
+                         i f   ( p r e d   = =   n u l l )     / / 插 入 位 置 前 一 结 点 为 空 的 ， 说 明 新 插 入 的 结 点 就 是 第 一 个 结 点 
+                                 f i r s t   =   n e w N o d e ; 
+                         e l s e 
+                                 p r e d . n e x t   =   n e w N o d e ; 
+                         s i z e + + ; 
+                         m o d C o u n t + + ; 
+                 } 
+         
+ ` ` ` 	 
+ 
+     * *   b o o l e a n   a d d A l l ( C o l l e c t i o n < ?   e x t e n d s   E >   c ) * *   添 加 指 定   c o l l e c t i o n   中 的 所 有 元 素 到 此 列 表 的 结 尾 ， 调 用 下 面 的 a d d A l l （ i n t   i n d e x ,   C o l l e c t i o n < ?   e x t e n d s   E >   c ） 实 现 ， 形 参 传 入 的 i n d e x 就 为 s i z e   * * b o o l e a n   a d d A l l ( i n t   i n d e x ,   C o l l e c t i o n < ?   e x t e n d s   E >   c ) * *   将 指 定   c o l l e c t i o n   中 的 所 有 元 素 从 指 定 位 置 开 始 插 入 此 列 表 。 
+ 
+ ` ` ` j a v a 
+                 p u b l i c   b o o l e a n   a d d A l l ( C o l l e c t i o n < ?   e x t e n d s   E >   c )   { 
+                         r e t u r n   a d d A l l ( s i z e ,   c ) ; / / 调 用 下 面 重 载 的 a d d A l l 
+                 } 
+         
+                 p u b l i c   b o o l e a n   a d d A l l ( i n t   i n d e x ,   C o l l e c t i o n < ?   e x t e n d s   E >   c )   { 
+                         c h e c k P o s i t i o n I n d e x ( i n d e x ) ;     / / 检 查 i n d e x 是 否 越 界 ， 小 于 0 或 比 当 前 最 大 结 点 数 还 大 
+                         O b j e c t [ ]   a   =   c . t o A r r a y ( ) ;       
+                         i n t   n u m N e w   =   a . l e n g t h ; 
+                         i f   ( n u m N e w   = =   0 ) 
+                                 r e t u r n   f a l s e ; 
+         
+                         N o d e < E >   p r e d ,   s u c c ;     / / p r e 保 存 插 入 位 置 的 前 一 个 结 点 ， s u c c 保 存 插 入 位 置 后 一 个 结 点 
+                         i f   ( i n d e x   = =   s i z e )   { 
+                                 s u c c   =   n u l l ; 
+                                 p r e d   =   l a s t ; 
+                         }   e l s e   { 
+                                 s u c c   =   n o d e ( i n d e x ) ;       / / 查 找 位 置 i n d e x 的 结 点 引 用 ， 使 用 较 多 ， 下 面 单 独 贴 代 码 
+                                 p r e d   =   s u c c . p r e v ; 
+                         } 
+         
+                         / / 移 动 p r e ， 插 入 集 合 内 元 素 
+                         f o r   ( O b j e c t   o   :   a )   { 
+                                 @ S u p p r e s s W a r n i n g s ( " u n c h e c k e d " )   E   e   =   ( E )   o ; 
+                                 N o d e < E >   n e w N o d e   =   n e w   N o d e < > ( p r e d ,   e ,   n u l l ) ; 
+                                 i f   ( p r e d   = =   n u l l ) 
+                                         f i r s t   =   n e w N o d e ; 
+                                 e l s e 
+                                         p r e d . n e x t   =   n e w N o d e ; 
+                                 p r e d   =   n e w N o d e ; 
+                         } 
+                         / / 连 接 后 面 的 元 素 
+                         i f   ( s u c c   = =   n u l l )   { 
+                                 l a s t   =   p r e d ; 
+                         }   e l s e   { 
+                                 p r e d . n e x t   =   s u c c ; 
+                                 s u c c . p r e v   =   p r e d ; 
+                         } 
+         
+                         s i z e   + =   n u m N e w ; 
+                         m o d C o u n t + + ; 
+                         r e t u r n   t r u e ; 
+                 } 
+         
+ 
+     * * v o i d   a d d F i r s t ( E   e ) * *   将 指 定 元 素 插 入 此 列 表 的 开 头 ， 调 用 内 部 l i n k F i r s t 方 法 ： 
+ 
+                 p r i v a t e   v o i d   l i n k F i r s t ( E   e )   { 
+                         f i n a l   N o d e < E >   f   =   f i r s t ; 
+                         f i n a l   N o d e < E >   n e w N o d e   =   n e w   N o d e < > ( n u l l ,   e ,   f ) ; 
+                         f i r s t   =   n e w N o d e ; 
+                         i f   ( f   = =   n u l l ) 
+                                 l a s t   =   n e w N o d e ; 
+                         e l s e 
+                                 f . p r e v   =   n e w N o d e ; 
+                         s i z e + + ; 
+                         m o d C o u n t + + ; / / m o d C o u n t   在 A r r a y L i s t 已 经 讲 过 ， 记 录 修 改 次 数 ， 在 迭 代 时 处 理 线 程 不 安 全 问 题 
+                 } 
+         
+ ` ` ` 
+ 
+     * * v o i d   c l e a r ( ) * *   清 空 列 表 ， 从 此 列 表 中 移 除 所 有 元 素 。   虽 然 可 以 直 接 将 f i r t ， l a s t 置 空 ， 清 除 结 点 间 的 所 有 连 接 是 不 必 要 的 ， 但 是 中 间 所 有 结 点 置 空 ， 有 助 于 垃 圾 回 收 。   因 此 这 里 遍 历 链 表 ， 将 所 有 引 用 变 量 置 空 ， 没 有 引 用 的 内 存 将 很 快 被 回 收 清 理 。 
+ 
+ ` ` ` j a v a 
+                 p u b l i c   v o i d   c l e a r ( )   { 
+                         f o r   ( N o d e < E >   x   =   f i r s t ;   x   ! =   n u l l ;   )   { 
+                                 N o d e < E >   n e x t   =   x . n e x t ; 
+                                 x . i t e m   =   n u l l ; 
+                                 x . n e x t   =   n u l l ; 
+                                 x . p r e v   =   n u l l ; 
+                                 x   =   n e x t ; 
+                         } 
+                         f i r s t   =   l a s t   =   n u l l ; 
+                         s i z e   =   0 ; 
+                         m o d C o u n t + + ; 
+                 } 
+         
+ ` ` ` 
+ 
+     * * O b j e c t   c l o n e ( ) * *   返 回 此   L i n k e d L i s t   的 浅 表 副 本 。   （ 浅 拷 贝 ） 
+ 
+ ` ` ` j a v a 
+                 p u b l i c   O b j e c t   c l o n e ( )   { 
+                         L i n k e d L i s t < E >   c l o n e   =   s u p e r C l o n e ( ) ; / / 此 s u p e r C l o n e 方 法 内 调 用 父 类 的 c l o n e 方 法 
+                         / / 使 c l o n e 过 来 的 副 本 保 持 纯 洁 . . . 将 变 量 初 始 化 
+                         / /   P u t   c l o n e   i n t o   " v i r g i n "   s t a t e 
+                         c l o n e . f i r s t   =   c l o n e . l a s t   =   n u l l ; 
+                         c l o n e . s i z e   =   0 ; 
+                         c l o n e . m o d C o u n t   =   0 ; 
+                         / / 用 现 在 的 元 素 初 始 化 此 c l o n e 
+                         / /   I n i t i a l i z e   c l o n e   w i t h   o u r   e l e m e n t s 
+                         f o r   ( N o d e < E >   x   =   f i r s t ;   x   ! =   n u l l ;   x   =   x . n e x t ) 
+                                 c l o n e . a d d ( x . i t e m ) ; 
+         
+                         r e t u r n   c l o n e ; 
+                 } 
+                 p r i v a t e   L i n k e d L i s t < E >   s u p e r C l o n e ( )   { 
+                         t r y   { 
+                                 r e t u r n   ( L i n k e d L i s t < E > )   s u p e r . c l o n e ( ) ; 
+                         }   c a t c h   ( C l o n e N o t S u p p o r t e d E x c e p t i o n   e )   { 
+                                 t h r o w   n e w   I n t e r n a l E r r o r ( e ) ; 
+                         } 
+                 } 
+         
+ ` ` ` 
+ 
+ * * I t e r a t o r < E >   d e s c e n d i n g I t e r a t o r ( ) * *   返 回 以 逆 向 顺 序 在 此 双 端 队 列 的 元 素 上 进 行 迭 代 的 迭 代 器 。   （ 指 向 最 后 一 个 结 点 的 迭 代 器 ， 并 且 逆 序 迭 代 ）   * * L i s t I t e r a t o r < E >   l i s t I t e r a t o r ( i n t   i n d e x ) * *   返 回 此 列 表 中 的 元 素 的 列 表 迭 代 器 （ 按 适 当 顺 序 ） ， 从 列 表 中 指 定 位 置 开 始 。   * *   i n t   s i z e ( ) * *   返 回 此 列 表 的 元 素 数 ， r e t u r n   * * s i z e * * 。   * * 下 面 的 方 法 很 多 作 用 都 是 一 样 的 ， 大 都 是 通 过 调 用 一 些 私 有 的 方 法 实 现 ， 方 法 名 字 不 同 ， 原 理 都 差 不 多 ， 提 供 这 些 重 复 不 同 名 的 方 法 ， 易 于 分 辨 ， 方 便 用 来 实 现 栈 ， 队 列 等 数 据 结 构 。 * *   * * E   g e t ( i n t   i n d e x ) * *   返 回 此 列 表 中 指 定 位 置 处 的 元 素 ， 调 用 上 面 说 过 的 n o d e 方 法 查 找 i n d e x 处 的 结 点 ， 返 回 结 点 值 。   * * E   e l e m e n t ( ) * *   调 用 g e t F i r s t 方 法 返 回 列 表 中 第 一 个 结 点 的 值   * *   E   g e t F i r s t ( ) * *   返 回 此 列 表 的 第 一 个 元 素 。 
+ 
+ ` ` ` j a v a 
+                 p u b l i c   E   g e t F i r s t ( )   { 
+                         f i n a l   N o d e < E >   f   =   f i r s t ; 
+                         i f   ( f   = =   n u l l ) 
+                                 t h r o w   n e w   N o S u c h E l e m e n t E x c e p t i o n ( ) ; 
+                         r e t u r n   f . i t e m ; 
+                 } 
+         
+ ` ` ` 
+ 
+     * * E   g e t L a s t ( ) * *   返 回 此 列 表 的 最 后 一 个 元 素 ， 检 查 是 否 为 空 后 ， * * r e t u r n   l a s t . i t e m ; * *   * * b o o l e a n   c o n t a i n s ( O b j e c t   o ) * *   查 找 此 列 表 是 否 包 含 指 定 元 素 ， 内 部 调 用 下 面 的 i n d e x O f 方 法 查 找 ， 元 素 o 的 位 置 ， 没 找 到 得 到 返 回 值 为 - 1 ， 说 明 不 包 含 此 元 素 返 回   f a l s e ， 否 则 返 回 t r u e   * * i n t   i n d e x O f ( O b j e c t   o ) * *   返 回 此 列 表 中 首 次 出 现 的 指 定 元 素 的 索 引 ， 如 果 此 列 表 中 不 包 含 该 元 素 ， 则 返 回   - 1 。 
+ 
+ ` ` ` j a v a 
+                   p u b l i c   i n t   i n d e x O f ( O b j e c t   o )   { 
+                         i n t   i n d e x   =   0 ; 
+                         / / 如 果 对 象 为 空 ， 则 查 找 ， 结 点 值 为 空 的 元 素 。 
+                         i f   ( o   = =   n u l l )   { 
+                                 f o r   ( N o d e < E >   x   =   f i r s t ;   x   ! =   n u l l ;   x   =   x . n e x t )   { 
+                                         i f   ( x . i t e m   = =   n u l l ) 
+                                                 r e t u r n   i n d e x ; 
+                                         i n d e x + + ; 
+                                 } 
+                         }   e l s e   { 
+                                 / / 否 则 从 前 往 后 遍 历 链 表 查 找 指 定 元 素 i n d e x 
+                                 f o r   ( N o d e < E >   x   =   f i r s t ;   x   ! =   n u l l ;   x   =   x . n e x t )   { 
+                                         i f   ( o . e q u a l s ( x . i t e m ) ) 
+                                                 r e t u r n   i n d e x ; 
+                                         i n d e x + + ; 
+                                 } 
+                         } 
+                         r e t u r n   - 1 ; 
+                 } 
+         
+ ` ` ` 
+ 
+ * * i n t   l a s t I n d e x O f ( O b j e c t   o ) * *   返 回 此 列 表 中 最 后 出 现 的 指 定 元 素 的 索 引 ， 如 果 此 列 表 中 不 包 含 该 元 素 ， 则 返 回   - 1 。     从 后 往 前 查 找 ， 找 到 就 返 回 ， 找 不 到 返 回 - 1 ， 与 上 面 的 i n d e x O f 实 现 类 似 ， 遍 历 时 从 后 往 前 。   * * b o o l e a n   o f f e r ( E   e ) * *   将 指 定 元 素 添 加 到 此 列 表 的 末 尾 （ 最 后 一 个 元 素 ） ， 调 用 a d d 方 法 。   * *   b o o l e a n   o f f e r F i r s t ( E   e ) * *   在 此 列 表 的 开 头 插 入 指 定 的 元 素 ， 调 用 a d d F i r s t 方 法 。   * *   b o o l e a n   o f f e r L a s t ( E   e ) * *   在 此 列 表 末 尾 插 入 指 定 的 元 素 ， 调 用 a d d L a s t 方 法 。   * *   E   p e e k ( ) * *   获 取 但 不 移 除 此 列 表 的 头 （ 第 一 个 元 素 ） ， 这 里 比 较 简 单 ， 直 接 返 回 ， 不 用 调 用 g e t F i r s t 方 法 。 
+ 
+ ` ` ` j a v a 
+                 p u b l i c   E   p e e k ( )   { 
+                         f i n a l   N o d e < E >   f   =   f i r s t ; 
+                         r e t u r n   ( f   = =   n u l l )   ?   n u l l   :   f . i t e m ; 
+                 } 
+         
+ ` ` ` 
+ 
+ * * E   p o l l ( ) * *   获 取 并 移 除 此 列 表 的 头 （ 第 一 个 元 素 ） ， 调 用 u n l i n k F i r s t 方 法 ， 移 除 第 一 个 元 素 。   * * E   r e m o v e F i r s t ( ) * *   移 除 并 返 回 此 列 表 的 第 一 个 元 素 ， 调 用 u n l i n k F i r s t ， 与 p o l l 作 用 相 同 。   * * E   r e m o v e ( ) * *   获 取 并 移 除 此 列 表 的 头 （ 第 一 个 元 素 ） ， 调 用 r e m o v e F i r s t 方 法 。 
+ 
+ ` ` ` j a v a 
+                 p u b l i c   E   p o l l ( )   { 
+                         f i n a l   N o d e < E >   f   =   f i r s t ; 
+                         r e t u r n   ( f   = =   n u l l )   ?   n u l l   :   u n l i n k F i r s t ( f ) ; 
+                 } 
+         
+                 p r i v a t e   E   u n l i n k F i r s t ( N o d e < E >   f )   { 
+                         / /   a s s e r t   f   = =   f i r s t   & &   f   ! =   n u l l ; 
+                         f i n a l   E   e l e m e n t   =   f . i t e m ; / / 保 存 首 结 点 的 值 ， 移 除 后 返 回 此 值 
+                         f i n a l   N o d e < E >   n e x t   =   f . n e x t ; 
+                         f . i t e m   =   n u l l ; 
+                         f . n e x t   =   n u l l ;   / /   h e l p   G C 帮 助 垃 圾 回 收 
+                         f i r s t   =   n e x t ;   / / 首 结 点 指 向 第 二 个 结 点 
+                         i f   ( n e x t   = =   n u l l ) 
+                                 l a s t   =   n u l l ; 
+                         e l s e 
+                                 n e x t . p r e v   =   n u l l ; 
+                         s i z e - - ; 
+                         m o d C o u n t + + ; 
+                         r e t u r n   e l e m e n t ; 
+                 } 
+         
+ ` ` ` 
+ 
+ * * E   p o p ( ) * *   从 此 列 表 所 表 示 的 堆 栈 处 弹 出 一 个 元 素 ， 同 样 调 用 上 面 的 * * r e m o v e F i r s t * * 方 法 . . . 可 见 也 会 返 回 p o p 出 元 素 的 值 。 
+ 
+ ` ` ` j a v a 
+                 p u b l i c   E   p o p ( )   { 
+                         r e t u r n   r e m o v e F i r s t ( ) ; 
+                 } 
+                 p u b l i c   E   r e m o v e F i r s t ( )   { 
+                         f i n a l   N o d e < E >   f   =   f i r s t ; 
+                         i f   ( f   = =   n u l l ) 
+                                 t h r o w   n e w   N o S u c h E l e m e n t E x c e p t i o n ( ) ; 
+                         r e t u r n   u n l i n k F i r s t ( f ) ; 
+                 } 
+         
+ ` ` ` 
+ 
+ * *   v o i d   p u s h ( E   e ) * *   将 元 素 推 入 此 列 表 所 表 示 的 堆 栈 ， 调 用 * * a d d F i r s t * * 方 法 。   * * E   r e m o v e ( i n t   i n d e x ) * *   移 除 此 列 表 中 指 定 位 置 处 的 元 素 ， 调 用 n o d e 通 过 i n d e x 查 找 到 结 点 ， 再 调 用 u n l i n k 移 除 指 定 元 素 。 
+ 
+ ` ` ` j a v a 
+               E   u n l i n k ( N o d e < E >   x )   { 
+                         / /   a s s e r t   x   ! =   n u l l ; 
+                         f i n a l   E   e l e m e n t   =   x . i t e m ; 
+                         f i n a l   N o d e < E >   n e x t   =   x . n e x t ;     / / 保 存 下 一 个 结 点 
+                         f i n a l   N o d e < E >   p r e v   =   x . p r e v ;     / / 记 录 上 一 个 结 点 
+         >                 / / 上 一 个 结 点 接 上 下 一 个 结 点 ， 如 果 上 一 个 结 点 为 空 ， 说 明 移 除 的 第 一 个 元 素 ， 则 f i r s t 指 向 下 一 个 结 点 
+                         i f   ( p r e v   = =   n u l l )   { 
+                                 f i r s t   =   n e x t ; 
+                         }   e l s e   { 
+                                 p r e v . n e x t   =   n e x t ; 
+                                 x . p r e v   =   n u l l ; 
+                         } 
+                         / / 如 果 下 一 个 结 点 为 空 ， 说 明 移 除 的 最 后 一 个 元 素 ， 则 l a s t 指 向 上 一 个 结 点 
+                         i f   ( n e x t   = =   n u l l )   { 
+                                 l a s t   =   p r e v ; 
+                         }   e l s e   { 
+                                 n e x t . p r e v   =   p r e v ; 
+                                 x . n e x t   =   n u l l ; 
+                         } 
+         
+                         x . i t e m   =   n u l l ; 
+                         s i z e - - ; 
+                         m o d C o u n t + + ; 
+                         r e t u r n   e l e m e n t ; 
+                 } 
+         
+ ` ` ` 
+ 
+     * *   b o o l e a n   r e m o v e F i r s t O c c u r r e n c e ( O b j e c t   o ) * *   从 此 列 表 中 移 除 第 一 次 出 现 的 指 定 元 素 ， 调 用 下 面 的 r e m o v e （ O b j e c t   o ） 。   * *   b o o l e a n   r e m o v e ( O b j e c t   o ) * *   从 此 列 表 中 移 除 首 次 出 现 的 指 定 元 素 ， 找 到 元 素 ， 调 用 u n l i n k 方 法 移 除 。   找 不 到 则 返 回 f a l s e   * *   b o o l e a n   r e m o v e L a s t O c c u r r e n c e ( O b j e c t   o ) * *   从 此 列 表 中 移 除 最 后 一 次 出 现 的 指 定 元 素 （ 从 头 部 到 尾 部 遍 历 列 表 时 ） ， 与 r e m o v e F i r s t O c c u r r e n c e 类 似 ， 这 是 从 后 往 前 找 。 
+ 
+ ` ` ` j a v a 
+                   p u b l i c   b o o l e a n   r e m o v e ( O b j e c t   o )   { 
+                         i f   ( o   = =   n u l l )   { 
+                                 f o r   ( N o d e < E >   x   =   f i r s t ;   x   ! =   n u l l ;   x   =   x . n e x t )   { 
+                                         i f   ( x . i t e m   = =   n u l l )   { 
+                                                 u n l i n k ( x ) ; 
+                                                 r e t u r n   t r u e ; 
+                                         } 
+                                 } 
+                         }   e l s e   { 
+                               / / 从 前 往 后 查 找 ， 与 指 定 元 素 值 相 同 的 结 点 ， 调 用 u n l i n k 方 法 移 除 
+                                 f o r   ( N o d e < E >   x   =   f i r s t ;   x   ! =   n u l l ;   x   =   x . n e x t )   { 
+                                         i f   ( o . e q u a l s ( x . i t e m ) )   { 
+                                                 u n l i n k ( x ) ; 
+                                                 r e t u r n   t r u e ; 
+                                         } 
+                                 } 
+                         } 
+                         r e t u r n   f a l s e ; 
+                 } 
+         
+ ` ` ` 
+ 
+ * * E   r e m o v e L a s t ( ) * *   移 除 并 返 回 此 列 表 的 最 后 一 个 元 素 ， 调 用 u n l i n k L a s t 。 
+ 
+ ` ` ` j a v a 
+                   p r i v a t e   E   u n l i n k L a s t ( N o d e < E >   l )   { 
+                         / /   a s s e r t   l   = =   l a s t   & &   l   ! =   n u l l ; 
+                         f i n a l   E   e l e m e n t   =   l . i t e m ;     / / 保 存 移 除 结 点 的 值 
+                         f i n a l   N o d e < E >   p r e v   =   l . p r e v ;     / / 保 存 前 一 个 结 点 
+                         l . i t e m   =   n u l l ; 
+                         l . p r e v   =   n u l l ;   / /   h e l p   G C 
+                         l a s t   =   p r e v ;     / / l a s t 指 向 前 一 个 结 点 
+                         i f   ( p r e v   = =   n u l l ) 
+                                 f i r s t   =   n u l l ;     / / 前 一 个 结 点 为 空 ， 说 明 没 有 元 素 了 ， f i r s t 置 为 空 
+                         e l s e 
+                                 p r e v . n e x t   =   n u l l ; 
+                         s i z e - - ; 
+                         m o d C o u n t + + ; 
+                         r e t u r n   e l e m e n t ; 
+                 } 
+         
+ ` ` ` 
+ 
+ * * E   s e t ( i n t   i n d e x ,   E   e l e m e n t ) * *   将 此 列 表 中 指 定 位 置 的 元 素 替 换 为 指 定 的 元 素 。 先 通 过 n o d e 方 法 查 找 到 对 应 结 点 ， 再 更 新 其 值 。 
+ 
+ ` ` ` j a v a 
+                 p u b l i c   E   s e t ( i n t   i n d e x ,   E   e l e m e n t )   { 
+                         c h e c k E l e m e n t I n d e x ( i n d e x ) ; 
+                         N o d e < E >   x   =   n o d e ( i n d e x ) ; 
+                         E   o l d V a l   =   x . i t e m ; 
+                         x . i t e m   =   e l e m e n t ; 
+                         r e t u r n   o l d V a l ; 
+                 } 
+         
+ ` ` ` 
+ 
+ * * O b j e c t \ [ \ ]   t o A r r a y ( ) * *   返 回 以 适 当 顺 序 （ 从 第 一 个 元 素 到 最 后 一 个 元 素 ） 包 含 此 列 表 中 所 有 元 素 的 数 组 ， 这 个 数 组 大 小 刚 好 存 放 所 有 元 素 , 从 前 往 后 遍 历 链 表 ， 保 存 值 到 对 象 数 组 返 回 。 
+ 
+ ` ` ` j a v a 
+                   p u b l i c   O b j e c t [ ]   t o A r r a y ( )   { 
+                         O b j e c t [ ]   r e s u l t   =   n e w   O b j e c t [ s i z e ] ; 
+                         i n t   i   =   0 ; 
+                         f o r   ( N o d e < E >   x   =   f i r s t ;   x   ! =   n u l l ;   x   =   x . n e x t ) 
+                                 r e s u l t [ i + + ]   =   x . i t e m ; 
+                         r e t u r n   r e s u l t ; 
+                 } 
+         
+ ` ` ` 
+ 
+ * * < T >   T \ [ \ ]     t o A r r a y ( T \ [ \ ]   a ) * *   返 回 以 适 当 顺 序 （ 从 第 一 个 元 素 到 最 后 一 个 元 素 ） 包 含 此 列 表 中 所 有 元 素 的 数 组 ； 返 回 数 组 类 型 为 指 定 的 数 组 类 型 ， 如 果 指 定 数 组 长 度 不 够 ， 就 重 新 申 请 一 个 s i z e 大 小 的 相 同 类 型 数 组 。   否 则 将 数 组 中 最 后 一 个 元 素 的 位 置 置 空 ， 方 便 求 数 组 长 度 。 
+ 
+ ` ` ` j a v a 
+                 p u b l i c   < T >   T [ ]   t o A r r a y ( T [ ]   a )   { 
+                         i f   ( a . l e n g t h   <   s i z e ) 
+                                 a   =   ( T [ ] ) j a v a . l a n g . r e f l e c t . A r r a y . n e w I n s t a n c e ( 
+                                                                         a . g e t C l a s s ( ) . g e t C o m p o n e n t T y p e ( ) ,   s i z e ) ; 
+                         i n t   i   =   0 ; 
+                         O b j e c t [ ]   r e s u l t   =   a ; 
+                         f o r   ( N o d e < E >   x   =   f i r s t ;   x   ! =   n u l l ;   x   =   x . n e x t ) 
+                                 r e s u l t [ i + + ]   =   x . i t e m ; 
+         
+                         i f   ( a . l e n g t h   >   s i z e ) 
+                                 a [ s i z e ]   =   n u l l ; 
+         
+                         r e t u r n   a ; 
+                 } 
+ ` ` ` 
