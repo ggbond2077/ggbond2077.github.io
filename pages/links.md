@@ -6,8 +6,9 @@ keywords: 友情链接
 permalink: /links/
 ---
 
+
 <ul>
-<li><a href="http://ggbond.cc">ggbond</a></li>
+<li><a href="http://blog.kayle.tk">kayle</a></li>
 </ul>
 
 <ul>
