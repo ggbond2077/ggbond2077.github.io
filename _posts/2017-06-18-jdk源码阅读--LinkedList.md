@@ -7,7 +7,7 @@ keywords: java
 ---
 
 
-LinkedList也是一个变长有序集合，跟[ArrayList](http://www.ctguggbond.com/java%e6%ba%90%e7%a0%81%e9%98%85%e8%af%bb-arraylist/)一样都实现了List接口，但不同的是LinkedList以链表方式实现，导致其特性与ArrayList也有所不同。 LinkedList按位置查找需要遍历链表，不如ArrayList直接定位快，在首尾增删元素比较方便，如要在指定位置增加删除修改元素，也会有遍历链表o(n)的代价。 另外这个类实现了Deque接口提供了push，pop，add，offer，poll等方法，供我们将列表用作实现堆栈、队列或双端队列。 继承关系： ![LinkedList继承关系](https://www.ggbond.cc/wp-content/uploads/2017/06/LinkedList.png)  **成员变量声明:**
+LinkedList也是一个变长有序集合，跟[ArrayList](http://www.ctguggbond.com/java%e6%ba%90%e7%a0%81%e9%98%85%e8%af%bb-arraylist/)一样都实现了List接口，但不同的是LinkedList以链表方式实现，导致其特性与ArrayList也有所不同。 LinkedList按位置查找需要遍历链表，不如ArrayList直接定位快，在首尾增删元素比较方便，如要在指定位置增加删除修改元素，也会有遍历链表o(n)的代价。 另外这个类实现了Deque接口提供了push，pop，add，offer，poll等方法，供我们将列表用作实现堆栈、队列或双端队列。 继承关系： ![LinkedList继承关系](/images/jdk_linkedlist_1.png)  **成员变量声明:**
 
 ```java
         //列表的大小

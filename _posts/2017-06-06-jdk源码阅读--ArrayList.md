@@ -7,7 +7,7 @@ keywords: java
 ---
 
 
-**ArrayList为变长有序数组集合，有序是指按指定序列排列，并不是字典序，其在内部维护一个Object对象数组elementData（定义为： **transient Object\[\] elementData;**），可以存储任意类型数据。在容量足够的情况下，其在尾部插入较快，当容量不足时会产生O（n）的复制代价。 顺序存储按指定位置查找元素较快，但删除时会移动大量数据，比较耗时。**  **ArrayList继承关系** ![arraylist](https://www.ggbond.cc/wp-content/uploads/2017/06/arraylist.png)   可以发现其父类已经实现List接口 为何ArrayList再次实现 ？有人说这是满足开闭原则，使ArrayList的接口更纯净。这篇博客 [http://www.cnblogs.com/bluejavababy/p/4320545.html](http://www.cnblogs.com/bluejavababy/p/4320545.html) 有讲解. 如子类不再次实现调用 getInterfaces()会为空 实现接口代理会报异常。   **构造方法：** **（1）ArrayList();**
+**ArrayList为变长有序数组集合，有序是指按指定序列排列，并不是字典序，其在内部维护一个Object对象数组elementData（定义为： **transient Object\[\] elementData;**），可以存储任意类型数据。在容量足够的情况下，其在尾部插入较快，当容量不足时会产生O（n）的复制代价。 顺序存储按指定位置查找元素较快，但删除时会移动大量数据，比较耗时。**  **ArrayList继承关系** ![arraylist](/images/jdk_arraylist_1.png)   可以发现其父类已经实现List接口 为何ArrayList再次实现 ？有人说这是满足开闭原则，使ArrayList的接口更纯净。这篇博客 [http://www.cnblogs.com/bluejavababy/p/4320545.html](http://www.cnblogs.com/bluejavababy/p/4320545.html) 有讲解. 如子类不再次实现调用 getInterfaces()会为空 实现接口代理会报异常。   **构造方法：** **（1）ArrayList();**
 
 ```java
         public ArrayList() {

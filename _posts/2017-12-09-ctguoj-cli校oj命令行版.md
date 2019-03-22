@@ -20,17 +20,17 @@ keywords: python
 功能演示：
 =====
 
-![ha](https://www.ggbond.cc/wp-content/uploads/2018/01/ctguoj.gif) 
+![ha](/images/ctguoj_1.gif) 
 
-`ctguoj list -c` 显示比赛列表: ![](https://www.ggbond.cc/wp-content/uploads/2017/12/showcontest.png)
+`ctguoj list -c` 显示比赛列表: ![](/images/ctguoj_2.png)
 
-`ctguoj list -p` 显示题目列表 ![](https://www.ggbond.cc/wp-content/uploads/2017/12/showProblem.png) 
+`ctguoj list -p` 显示题目列表 ![](/images/ctguoj_3.png) 
 
-`ctguoj show ranking` 显示排名 ![](https://www.ggbond.cc/wp-content/uploads/2017/12/showrangking.png) 
+`ctguoj show ranking` 显示排名 ![](/images/ctguoj_4.png) 
 
-`ctguoj submit id` 提交题目 ![](https://www.ggbond.cc/wp-content/uploads/2017/12/showsubmit.png) 
+`ctguoj submit id` 提交题目 ![](/images/ctguoj_5.png) 
 
-`ctguoj show help` 显示帮助信息 ![](https://www.ggbond.cc/wp-content/uploads/2017/12/showhelp.png)
+`ctguoj show help` 显示帮助信息 ![](/images/ctguoj_6.png)
 
 代码结构
 ====

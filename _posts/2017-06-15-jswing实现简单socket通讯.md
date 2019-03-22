@@ -16,9 +16,9 @@ keywords: java
 
 图：
 
-![youchat1](https://www.ggbond.cc/wp-content/uploads/2017/06/char01.png)                                             ![youchat2](https://www.ggbond.cc/wp-content/uploads/2017/06/chat02.png)
-
-![youchat3](https://www.ggbond.cc/wp-content/uploads/2017/06/chat03.png)
+![youchat1](/images/you_chat_1.png)
+![youchat2](/images/you_chat_2.png)
+![youchat3](/images/you_chat_3.png)
 
 一、登录注册
 
