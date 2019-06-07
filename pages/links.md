@@ -12,5 +12,9 @@ permalink: /links/
 </ul>
 
 <ul>
+<li><a href="https://cser.blog/">CSer's blog</a></li>
+</ul>
+
+<ul>
 <li><a href="http://mazhuang.org/">码志</a></li>
 </ul>
