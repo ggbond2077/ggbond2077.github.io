@@ -6,7 +6,7 @@ keywords: ggbond
 permalink: /about/
 ---
 
-*Contact:*  email : me@ggbond.cc 
+*Contact:*  email : bWVAZ2dib25kLmNj
 
-*Social:*   [github](http://github.com/ctguggbond) 
+*Social:*   [github](http://github.com/ggbond2077) 
     
